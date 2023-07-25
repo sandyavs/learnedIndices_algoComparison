@@ -1,0 +1,44 @@
+{
+    "D1": {
+        "bPlusTree": {
+            "buildTime": 2339.69,
+            "queryTime": 2.7
+        },
+        "SR": {
+            "buildTime": 11267.82,
+            "queryTime": 3286.8
+        },
+        "SPN": {
+            "buildTime": 3533.18,
+            "queryTime": 16.51
+        }
+    },
+    "D2": {
+        "bPlusTree": {
+            "buildTime": 42832.51,
+            "queryTime": 3.33
+        },
+        "SR": {
+            "buildTime": 42932.94,
+            "queryTime": 3189.57
+        },
+        "SPN": {
+            "buildTime": 37475.97,
+            "queryTime": 157.66
+        }
+    },
+    "D3": {
+        "bPlusTree": {
+            "buildTime": 536050.23,
+            "queryTime": 4.17
+        },
+        "SR": {
+            "buildTime": 468654.92,
+            "queryTime": 3188.44
+        },
+        "SPN": {
+            "buildTime": 432920.0,
+            "queryTime": 1839.84
+        }
+    }
+}
