@@ -29,7 +29,7 @@ from bisect import bisect_left  # for binary search over lists
 
 print("Input Dataset: D1/D2/D3 ?")
 datasetName = input()
-dataframe = pd.read_csv("./dataset_csv/int_10000_20230717_123124_train_aifeynman.ssv", header=None)
+dataframe = pd.read_csv("./dataset_csv/int_100000_20230717_123132_train_aifeynman.ssv", header=None)
 column_labels = dataframe.keys()
 column_labels = ["x", "y"]
 dataframe = dataframe.set_axis(column_labels, axis=1)
@@ -53,7 +53,7 @@ end_time=time.time()
 spn_txt = spn_to_str_equation(spn)
 print(spn_txt)
 total_build_time = round((end_time-start_time) * 1000, 2) #in ms
-print("Build Time:", total_build_time, " ms")
+# print("Build Time:", total_build_time, " ms")
 
 print("Structure Stats:",get_structure_stats(spn))
 # print("SPN Structure")
@@ -78,7 +78,7 @@ print('max_err_bound', max_err_bound)
 def approx_query(key, spn_model=spn, err_bound=max_err_bound):
 	temp_arr_of_key = np.array([key,np.nan])
 	arr_of_key = np.array([temp_arr_of_key])
-	print('arr_of_key', arr_of_key, type(arr_of_key), arr_of_key.shape)
+	# print('arr_of_key', arr_of_key, type(arr_of_key), arr_of_key.shape)
 	res = mpe(spn_model, arr_of_key)
 	begin = res[0][1] - err_bound
 	end = res[0][1] + err_bound
@@ -86,7 +86,7 @@ def approx_query(key, spn_model=spn, err_bound=max_err_bound):
 		begin = 0
 	# elif(end < 0):
 	# 	end = 0
-	print({ "begin": begin, "end": end })
+	# print({ "begin": begin, "end": end })
 	return { "begin": begin, "end": end }
 
 def find_ge_index(sorted_list, x):
@@ -130,12 +130,13 @@ dict_result = {
 	"approx_accuracy": 0,
 	"bsearch_accuracy": 0
 }
+
 def calc_runtime(random_query_point_range, key):
 	for query_point in random_query_point_range:
 		#approx_query runtime
 		query_search_bound_stime = time.time()
 		query_result = approx_query(query_point)
-		print("query result: ", query_result)
+		print("query_point:", query_point, "query result: ", query_result)
 		query_search_bound_etime = time.time()
 		query_search_bound_time = (query_search_bound_etime - query_search_bound_stime) * 1000
 		print("approximate query - runtime", round(query_search_bound_time, 2), " ms")
@@ -145,7 +146,7 @@ def calc_runtime(random_query_point_range, key):
 		start_slice_index = math.ceil(query_result['begin'])
 		end_slice_index = math.ceil(query_result['end'])
 		# print('start_slice_index', start_slice_index, end_slice_index)
-		binary_search_result = find_ge_index(column_data_as_list[start_slice_index:end_slice_index], query_point)
+		binary_search_result = find_ge_index(column_data_as_list[start_slice_index:end_slice_index], query_point) + 1
 		print("binary search result: ", binary_search_result)
 		query_last_mile_etime = time.time()
 		query_last_mile_time = (query_last_mile_etime - query_last_mile_stime) * 1000
@@ -164,28 +165,29 @@ def calc_mean_std(dict, key):
 
 	mean_for_approx_runtime = round_decimal(np.mean(approx_query_runtime_list))
 	std_for_approx_runtime = round_decimal(np.std(approx_query_runtime_list))
-	print(key, "- approx_list", ' mean - ', mean_for_approx_runtime, " ms", 'std - ', std_for_approx_runtime, " ms",)
+	print(key, "- approx_search_bound", ' mean - ', mean_for_approx_runtime, " ms", 'std - ', std_for_approx_runtime, " ms",)
 	dict_result[key]['mean'] = mean_for_approx_runtime
 	dict_result[key]['std'] = std_for_approx_runtime
 
 	mean_for_bsearch_runtime = round_decimal(np.mean(bsearch_runtime_list))
 	std_for_bsearch_runtime = round_decimal(np.mean(bsearch_runtime_list))
-	print(key, '- binary_list', ' mean - ', mean_for_bsearch_runtime, " ms", ' std - ', std_for_bsearch_runtime, " ms",)
+	print(key, '- last_mile_search', ' mean - ', mean_for_bsearch_runtime, " ms", ' std - ', std_for_bsearch_runtime, " ms",)
 	return
 
 print('Prediction for existing keys: ')
 column_data_as_list = column_data.tolist()
 random_query_point_range = random.sample(column_data_as_list,  100)
 dict_result = calc_runtime(random_query_point_range, 'exist')
-calc_mean_std(dict_result, 'exist')
 
 print("\n Prediction for non-existing keys: ")
 random_query_point_range = random.sample(list(set(range(min(column_data)+1, max(column_data)))-set(column_data)), 100)
 dict_result = calc_runtime(random_query_point_range, 'non-exist')
-calc_mean_std(dict_result, 'non-exist')
 
+print("\n Build Time:", total_build_time, " ms")
+calc_mean_std(dict_result, 'exist')
+calc_mean_std(dict_result, 'non-exist')
 dict_result["approx_accuracy"] = round_decimal(dict_result["exist"]["mean"] - dict_result["non-exist"]["mean"])
-print("approx_accuracy", dict_result["approx_accuracy"])
+print("accuracy on approx_search_bound", dict_result["approx_accuracy"], "ms")
 # # Get the current process object
 # process = psutil.Process()
 # # Get the memory usage in bytes
